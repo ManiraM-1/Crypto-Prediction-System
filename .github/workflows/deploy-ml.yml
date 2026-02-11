@@ -1,0 +1,37 @@
+name: Deploy Python ML API to Lambda
+
+on:
+  push:
+    paths:
+      - 'ml-api/**' # Only triggers when you change something in the ML folder
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          lfs: true # This ensures your large .h5 and .json models are included!
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies and Zip
+        run: |
+          cd ml-api
+          # Install libraries into the current folder so Lambda can see them
+          pip install -r requirements.txt -t .
+          # Zip everything in the ml-api folder
+          zip -r ../deployment_package.zip .
+
+      - name: Deploy to AWS Lambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-east-1 # Change this if your Lambda is in another region
+          function_name: Crypto-ML-API
+          zip_file: deployment_package.zip
