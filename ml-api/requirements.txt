@@ -5,4 +5,4 @@ numpy<2.0.0
 scikit-learn
 xgboost
 requests
-tensorflow-cpu 
+tensorflow-cpu
